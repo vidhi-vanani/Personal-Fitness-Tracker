@@ -309,7 +309,6 @@ const styles = StyleSheet.create({
     padding: 15,
     backgroundColor: Colors.light.backgroundSecondary,
     borderRadius: 8,
-    marginHorizontal: 10,
     marginVertical: 5,
   },
   workoutImage: {
