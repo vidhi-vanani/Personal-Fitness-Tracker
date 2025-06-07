@@ -3,7 +3,6 @@ import { View, Text, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Colors } from '@/constants/Colors';
 
-
 const HomePage = () => (
   <View style={styles.home}>
     <Icon name="weight-lifter" size={100} color={Colors['light'].icon} />

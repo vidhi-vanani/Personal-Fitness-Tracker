@@ -1,11 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { WorkoutsDisplay } from '@/components/Workouts/WorkoutsDisplay';
+import { Workouts } from '@/components/Workouts/Workouts';
 import { Colors } from '@/constants/Colors';
 
 export default function WorkoutsScreen() {
   return (
     <View style={styles.container}>
-      <WorkoutsDisplay />
+      <Workouts />
     </View>
   );
 }
