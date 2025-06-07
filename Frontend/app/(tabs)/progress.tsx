@@ -1,11 +1,11 @@
 import { StyleSheet, View } from 'react-native';
-import { PerformanceDisplay } from '@/components/Performance/PerformanceDisplay';
+import { Progress } from '@/components/Progress/Progress';
 import { Colors } from '@/constants/Colors';
 
-export default function PerformanceScreen() {
+export default function ProgressScreen() {
   return (
     <View style={styles.container}>
-      <PerformanceDisplay />
+      <Progress />
     </View>
   );
 }

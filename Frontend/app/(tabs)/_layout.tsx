@@ -47,9 +47,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="performance"
+        name="progress"
         options={{
-          title: 'Performance',
+          title: 'Progress',
           tabBarIcon: ({ color }) => <Icon name="chart-line" size={24} color={color} />,
         }}
       />

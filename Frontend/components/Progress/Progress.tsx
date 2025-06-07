@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export const PerformanceDisplay = () => {
+export const Progress = () => {
 
   return (
     <View style={styles.container}>
-      <Text>Performance</Text>
+      <Text>Progress</Text>
     </View>
   );
 };
