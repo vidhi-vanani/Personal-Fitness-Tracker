@@ -281,7 +281,10 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: Colors.light.backgroundSecondary,
     borderRadius: 8,
-    margin: 10,
+    marginHorizontal: 30,
+    marginVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
   },
   dayButton: {
     padding: 8,
@@ -300,7 +303,7 @@ const styles = StyleSheet.create({
   },
   workoutList: {
     flex: 1,
-    marginVertical: 10,
+    margin: 10,
   },
   workoutItem: {
     flexDirection: 'row',

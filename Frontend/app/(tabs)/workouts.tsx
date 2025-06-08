@@ -13,8 +13,6 @@ export default function WorkoutsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors['light'].background,
+    backgroundColor: Colors.light.background,
   },
 });

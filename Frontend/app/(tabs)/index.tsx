@@ -9,7 +9,7 @@ export default function HomeScreen() {
     setShow(true); // Show the component
     const timer = setTimeout(() => {
       setShow(false); // Hide after 3 seconds
-    }, 3000);
+    }, 1500);
 
     return () => clearTimeout(timer); // Cleanup on unmount
   }, []);
