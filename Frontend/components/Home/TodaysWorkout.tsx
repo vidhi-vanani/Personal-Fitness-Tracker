@@ -1,51 +1,81 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { Colors } from '@/constants/Colors';
+import axios from 'axios';
+import { Workout } from '@/components/Workouts/Workouts';
+import { BASE_URL } from '@/constants/api';
 
-const workoutList = [
-  {
-    id: '1',
-    title: 'Pushups',
-    sets: '3',
-    reps: '10',
-    completed: true,
-  },
-  {
-    id: '2',
-    title: 'Squats',
-    sets: '4',
-    reps: '12',
-    completed: false,
-  },
-  {
-    id: '3',
-    title: 'Plank',
-    sets: '2',
-    reps: '30s',
-    completed: false,
-  }
-];
+const daysOfWeek = ['Su', 'M', 'Tu', 'W', 'Th', 'F', 'Sa'];
 
 export const TodaysWorkout = () => {
-  const [workouts, setWorkouts] = useState(workoutList);
+  const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
+  const day = daysOfWeek[new Date().getDay()];
 
-  const handleCompleteWorkout = (workout: any, completed: boolean) => {
-    setWorkouts(workouts.map((w: any) =>
-      w.id === workout.id ? { ...w, completed } : w
+  // Check if it's Sunday and reset statuses
+  // useEffect(() => {
+  //   const checkAndResetStatuses = async () => {
+  //     const now = new Date();
+  //     if (now.getDay() === 0) { // Sunday
+  //       try {
+  //         await axios.post(`${BASE_URL}/api/workouts/status/reset`);
+  //       } catch (error) {
+  //         console.error('Failed to reset statuses:', error);
+  //       }
+  //     }
+  //   };
+
+  //   // Check once when component mounts
+  //   checkAndResetStatuses();
+
+  //   // Set up a timer to check every hour
+  //   const timer = setInterval(checkAndResetStatuses, 3600000); // 1 hour
+  //   return () => clearInterval(timer);
+  // }, []);
+
+  const handleCompleteWorkout = (workout: Workout, completed: boolean) => {
+    setWorkouts(workouts.map((w: Workout) =>
+      w._id === workout._id ? { ...w, status: { ...w.status, [day]: completed } } : w
     ));
-   
+    try {
+      axios.put(`${BASE_URL}/api/workouts/${workout._id}`, { status: { ...workout.status, [day]: completed } });
+    } catch (err) {
+      alert("Failed to update workout status");
+    }
   };
 
   useEffect(() => {
-    if(workouts.every((w: any) => w.completed)) {
+    if(workouts.length > 0 && workouts.every((w: Workout) => (w.status && w.status[day] != undefined && w.status[day] == true))) {
       setShowConfetti(true);
     }
   }, [workouts]);
-  
-  const renderWorkoutListItem = ({ item }: { item: any }) => {
+
+  // Fetch workouts on initial mount
+  useEffect(() => {
+    fetchWorkouts();
+  }, []);
+
+  // Fetch workouts when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchWorkouts();
+      return () => {};
+    }, [])
+  );
+
+  const fetchWorkouts = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/workouts/${day}`);
+      setWorkouts(response.data);
+    } catch (err) {
+      alert("Failed to fetch workouts");
+    }
+  };
+
+  const renderWorkoutListItem = ({ item }: { item: Workout }) => {
     return (
       <TouchableOpacity
         style={styles.workoutItem}
@@ -55,7 +85,7 @@ export const TodaysWorkout = () => {
           <Text style={styles.workoutTitle}>{item.title}</Text>
           <Text style={styles.workoutSubtitle}>{item.sets} x {item.reps}</Text>
         </View>
-        { item.completed ?
+        {  item.status != undefined && item.status[day] != undefined && item.status[day] ?
           <Icon name="check-circle" size={24} color={Colors.light.icon} onPress={() => handleCompleteWorkout(item, false)}/> :
           <Icon name="check-circle-outline" size={24} color={Colors.light.icon} onPress={() => handleCompleteWorkout(item, true)}/> }
       </TouchableOpacity>
@@ -67,7 +97,7 @@ export const TodaysWorkout = () => {
     <FlatList
       data={workouts}
       renderItem={renderWorkoutListItem}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item) => item._id}
     />
     {showConfetti &&
     <ConfettiCannon

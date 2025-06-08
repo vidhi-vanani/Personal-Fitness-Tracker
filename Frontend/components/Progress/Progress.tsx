@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   View, 
   Text, 
@@ -13,48 +13,68 @@ import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LineChart, XAxis, YAxis, Line, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import axios from 'axios';
+import { BASE_URL } from '@/constants/api';
 
 interface ProgressData {
-  id: string;
+  _id?: string;
   date: string;
   weight: number;
-  muscle: number;
+  mass: number;
   fat: number;
 }
 
-const sampleData: ProgressData[] = [
-  { id: '1', date: '01-01-2025', weight: 150, muscle: 20, fat: 80 },
-  { id: '2', date: '01-02-2025', weight: 140, muscle: 25, fat: 70 },
-  { id: '3', date: '01-03-2025', weight: 160, muscle: 30, fat: 60 },
-  { id: '4', date: '01-04-2025', weight: 130, muscle: 35, fat: 55 },
-  { id: '5', date: '01-05-2025', weight: 180, muscle: 40, fat: 50 },
-];
-
 export const Progress = () => {
-  const [progressData, setProgressData] = useState<ProgressData[]>(sampleData);
+  const [progressData, setProgressData] = useState<ProgressData[]>([]);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [weight, setWeight] = useState('');
-  const [muscle, setMuscle] = useState('');
+  const [mass, setMass] = useState('');
   const [fat, setFat] = useState('');
   const [date, setDate] = useState('');
 
-  const handleAddProgress = () => {
-    if (!weight || !muscle || !fat || !date) return;
+  useEffect(() => {
+    fetchProgressData();
+  }, []);
+
+  const fetchProgressData = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/progress`);
+      setProgressData(response.data);
+    } catch (err) {
+      alert("Failed to fetch progress data");
+    }
+  };
+
+  const handleAddProgress = async () => {
+    if (!weight || !mass || !fat || !date) return;
 
     const newProgress: ProgressData = {
-      id: Date.now().toString(),
       date,
       weight: parseFloat(weight),
-      muscle: parseFloat(muscle),
+      mass: parseFloat(mass),
       fat: parseFloat(fat)
     };
 
-    setProgressData([...progressData, newProgress]);
-    setIsAddModalVisible(false);
-    setWeight('');
-    setMuscle('');
-    setFat('');
-    setDate('');
+    try {
+      await axios.post(`${BASE_URL}/api/progress`, newProgress);
+      setProgressData([newProgress, ...progressData]);
+      setIsAddModalVisible(false);
+      setWeight('');
+      setMass('');
+      setFat('');
+      setDate('');
+    } catch (err) {
+      alert("Failed to add progress data");
+    }
+  };
+
+  const handleDeleteProgress = async (id: string) => {
+    try {
+      await axios.delete(`${BASE_URL}/api/progress/${id}`);
+      setProgressData(progressData.filter(item => item._id !== id));
+    } catch (err) {
+      alert("Failed to delete progress data");
+    }
   };
 
   const WeightGraph = () => {
@@ -70,7 +90,7 @@ export const Progress = () => {
             data={formattedData}
             margin={{ top: 0, left: -20, right: 0, bottom: 0 }}
           >
-            <XAxis dataKey="date" padding={{ left: 10, right: 15 }} tickFormatter={(value) => value.substring(0, 5)} />
+            <XAxis dataKey="date" padding={{ left: 10, right: 15 }} tickFormatter={(value) => value.substring(5, 10)} />
             <YAxis domain={['dataMin - 10', 'dataMax + 10']}/>
             <Tooltip />
             <Line type="linear" dataKey="weight" stroke={Colors.light.tint} />
@@ -83,7 +103,7 @@ export const Progress = () => {
   const MuscleAndFatGraph = () => {
     const formattedData = progressData.map(item => ({
       date: item.date,
-      muscle: item.muscle,
+      mass: item.mass,
       fat: item.fat
     }));
   
@@ -94,10 +114,10 @@ export const Progress = () => {
             data={formattedData}
             margin={{ top: 0, left: -20, right: 0, bottom: 0 }}
           >
-            <XAxis dataKey="date" padding={{ left: 10, right: 15 }} tickFormatter={(value) => value.substring(0, 5)} />
+            <XAxis dataKey="date" padding={{ left: 10, right: 15 }} tickFormatter={(value) => value.substring(5, 10)} />
             <YAxis domain={['dataMin - 10', 'dataMax + 10']}/>
             <Tooltip />
-            <Line type="linear" dataKey="muscle" stroke={Colors.light.tint} />
+            <Line type="linear" dataKey="mass" stroke={Colors.light.tint} />
             <Line type="linear" dataKey="fat" stroke={Colors.light.tintComplimentary} />
             <Legend />
           </LineChart>
@@ -121,12 +141,19 @@ export const Progress = () => {
         <Text style={styles.title}>Progress Data</Text>
       </View>
         {progressData.map((data) => (
-          <View key={data.id} style={styles.dataPoint}>
-            <Text style={styles.date}>{data.date}</Text>
-            <View style={styles.dataRow}>
-              <Text>Weight: {data.weight} lbs</Text>
-              <Text>Muscle: {data.muscle}%</Text>
-              <Text>Fat: {data.fat}%</Text>
+          <View key={data._id} style={styles.dataPoint}>
+            <View style={styles.iconContainer}>
+              <View>
+                <Text style={styles.date}>{data.date.substring(0, 10)}</Text>
+                <View style={styles.dataRow}>
+                  <Text>Weight: {data.weight} lbs  |  </Text>
+                  <Text>Muscle: {data.mass}%  |  </Text>
+                  <Text>Fat: {data.fat}%</Text>
+                </View>
+              </View>
+              <TouchableOpacity style={styles.iconButton} onPress={() => handleDeleteProgress(data._id!)}>
+                <Ionicons name="trash" size={20} color={Colors.light.icon} />
+              </TouchableOpacity>
             </View>
           </View>
         ))}
@@ -142,7 +169,7 @@ export const Progress = () => {
             <Text style={styles.modalTitle}>Add Progress Data</Text>
             <TextInput
               style={styles.input}
-              placeholder="Date (DD-MM-YYYY)"
+              placeholder="Date (YYYY-MM-DD)"
               value={date}
               onChangeText={setDate}
             />
@@ -156,8 +183,8 @@ export const Progress = () => {
             <TextInput
               style={styles.input}
               placeholder="Muscle (%)"
-              value={muscle}
-              onChangeText={setMuscle}
+              value={mass}
+              onChangeText={setMass}
               keyboardType="numeric"
             />
             <TextInput
@@ -296,5 +323,14 @@ const styles = StyleSheet.create({
   graphContainer: {
     alignItems: 'center',
     margin: 20,
+  },
+  iconButton: {
+    padding: 5,
+    marginLeft: 10,
+  },
+  iconContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 });

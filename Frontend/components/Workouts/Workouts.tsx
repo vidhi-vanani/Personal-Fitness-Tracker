@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
   FlatList,
   SafeAreaView,
   Modal,
@@ -13,111 +13,64 @@ import {
 import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import axios from 'axios';
+import { BASE_URL } from '@/constants/api';
 
-const daysOfWeek = ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su'];
+const daysOfWeek = ['Su', 'M', 'Tu', 'W', 'Th', 'F', 'Sa'];
 
-// List of workouts
-const workoutList = [
-  {
-    id: '1',
-    title: 'Pushups',
-    sets: '3',
-    reps: '10',
-    details: 'Pushups are a great full-body exercise targeting chest, shoulders, triceps, and core.',
-  },
-  {
-    id: '2',
-    title: 'Squats',
-    sets: '4',
-    reps: '12',
-    details: 'Squats are a compound exercise that targets the lower body.',
-  },
-  {
-    id: '3',
-    title: 'Plank',
-    sets: '2',
-    reps: '30s',
-    details: 'Planks are a great full-body exercise that target multiple muscle groups.',
-  },
-  {
-    id: '4',
-    title: 'Push Press',
-    sets: '3',
-    reps: '10',
-    details: 'Push Press is a compound exercise that targets the upper body, including the chest, shoulders, and triceps.',
-  },
-  {
-    id: '5',
-    title: 'Deadlift',
-    sets: '4',
-    reps: '12',
-    details: 'Deadlifts are a compound exercise that targets the lower body.',
-  },
-  {
-    id: '6',
-    title: 'Traditional Pullups',
-    sets: '4',
-    reps: '12',
-    details: 'Traditional pullups are a compound exercise that targets the upper body, including the back, shoulders, and biceps.',
-  },
-  {
-    id: '7',
-    title: 'Traditional Pushups',
-    sets: '4',
-    reps: '12',
-    details: 'Traditional pushups are a compound exercise that targets the upper body, including the chest, shoulders, and triceps.',
-  },
-  {
-    id: '8',
-    title: 'Traditional Deadlifts',
-    sets: '4',
-    reps: '12',
-    details: 'Traditional deadlifts are a compound exercise that targets the lower body.',
-  },
-];
+export type Workout = {
+  _id: string;
+  title: string;
+  sets: string;
+  reps: string;
+  details: string;
+  days: string[];
+  status: {
+    [day: string]: boolean;
+  }
+}
 
-const workoutListByDay: Record<string, any[]> = {
-  'M': [workoutList[0], workoutList[1]],
-  'Tu': [workoutList[2]],
-  'W': [workoutList[3]],
-  'Th': [workoutList[4]],
-  'F': [workoutList[0]],
-  'Sa': [workoutList[1]],
-  'Su': [workoutList[2]],
-};
 export const Workouts = () => {
+  const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [selectedDay, setSelectedDay] = useState<string>(daysOfWeek[0]);
   const [showWorkoutDrawer, setShowWorkoutDrawer] = useState(false);
-  const [workouts, setWorkouts] = useState(workoutListByDay);
+  const [workoutsByDay, setWorkoutsByDay] = useState<Workout[]>([]);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState<any>(null);
   const [editSets, setEditSets] = useState('');
   const [editReps, setEditReps] = useState('');
 
-  const handleEditWorkout = (workout: any) => {
+  useEffect(() => {
+    fetchWorkouts();
+  }, []);
+
+  const fetchWorkouts = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/workouts`);
+      setWorkouts(response.data);
+    } catch (err) {
+      alert("Failed to fetch workouts");
+    }
+  };
+
+  useEffect(() => {
+    fetchWorkoutsByDay();
+  }, [selectedDay]);
+
+  const fetchWorkoutsByDay = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/workouts/${selectedDay}`);
+      setWorkoutsByDay(response.data);
+    } catch (err) {
+      alert("Failed to fetch workouts");
+    }
+  };
+
+  const openEditWorkoutModal = (workout: any) => {
     setSelectedWorkout(workout);
     setEditSets(workout.sets);
     setEditReps(workout.reps);
     setIsEditModalVisible(true);
-  };
-
-  const handleUpdateWorkout = () => {
-    if (!selectedWorkout) return;
-
-    if (isNaN(Number(editSets)) || Number(editSets) <= 0 || Number(editSets) > 10) {
-      alert('Sets must be between 1 and 10');
-      return;
-    }
-    
-    const updatedWorkouts = {
-      ...workouts,
-      [selectedDay]: workouts[selectedDay].map((w: any) => 
-        w.id === selectedWorkout.id ? { ...w, sets: editSets, reps: editReps } : w
-      )
-    };
-    
-    setWorkouts(updatedWorkouts);
-    setIsEditModalVisible(false);
   };
 
   const renderDayButton = (day: string) => {
@@ -146,11 +99,11 @@ export const Workouts = () => {
           <Text style={styles.workoutSubtitle}>{item.sets} x {item.reps}</Text>
         </View>
         <View style={styles.iconContainer}>
-          <TouchableOpacity style={styles.iconButton} onPress={() => handleEditWorkout(item)}>
+          <TouchableOpacity style={styles.iconButton} onPress={() => openEditWorkoutModal(item)}>
             <Ionicons name="pencil" size={20} color={Colors.light.tint} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="trash" size={20} color={Colors.light.tint} onPress={() => handleDeleteWorkout(item)}/>
+            <Ionicons name="trash" size={20} color={Colors.light.tint} onPress={() => handleDeleteWorkout(item)} />
           </TouchableOpacity>
         </View>
       </View>
@@ -172,19 +125,53 @@ export const Workouts = () => {
     );
   };
 
-  const handleAddWorkout = (workout: any) => {
-    if(workouts[selectedDay].find((w: any) => w.id === workout.id)) {
+  const handleAddWorkout = (workout: Workout) => {
+    workout.days = [...workout.days, selectedDay];
+    if (workoutsByDay.find((w: Workout) => w._id === workout._id)) {
       setShowWorkoutDrawer(false);
       return;
     }
-    setWorkouts({...workouts, [selectedDay]: [...workouts[selectedDay], workout]});
+    try {
+      axios.put(`${BASE_URL}/api/workouts/${workout._id}`, workout);
+      setWorkoutsByDay([...workoutsByDay, workout]);
+    } catch (err) {
+      alert("Failed to add workout");
+    }
     setShowWorkoutDrawer(false);
   };
 
-  const handleDeleteWorkout = (workout: any) => {
-    setWorkouts({...workouts, [selectedDay]: workouts[selectedDay].filter((w: any) => w.id !== workout.id)});
+  const handleUpdateWorkout = () => {
+    if (!selectedWorkout) return;
+
+    if (isNaN(Number(editSets)) || Number(editSets) <= 0 || Number(editSets) > 10) {
+      alert('Sets must be between 1 and 10');
+      return;
+    }
+
+    const updatedWorkout = {
+      ...selectedWorkout,
+      sets: editSets,
+      reps: editReps,
+    };
+
+    const updatedWorkouts = workoutsByDay.map((w: Workout) =>
+      w._id === selectedWorkout._id ? updatedWorkout : w
+    );
+
+    axios.put(`${BASE_URL}/api/workouts/${updatedWorkout._id}`, updatedWorkout);
+    setWorkoutsByDay(updatedWorkouts);
+    setIsEditModalVisible(false);
   };
 
+  const handleDeleteWorkout = (workout: Workout) => {
+    workout.days = workout.days.filter((day: string) => day !== selectedDay);
+    try {
+      axios.put(`${BASE_URL}/api/workouts/${workout._id}`, workout);
+      setWorkoutsByDay(workoutsByDay.filter((w: Workout) => w._id !== workout._id));
+    } catch (err) {
+      alert("Failed to delete workout");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -238,9 +225,9 @@ export const Workouts = () => {
           {daysOfWeek.map(renderDayButton)}
         </View>
         <FlatList
-          data={workouts[selectedDay]}
+          data={workoutsByDay}
           renderItem={renderWorkoutItemForTheDay}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item._id}
           style={styles.workoutList}
         />
       </View>
@@ -259,9 +246,9 @@ export const Workouts = () => {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Select Workout</Text>
             <FlatList
-              data={workoutList}
+              data={workouts}
               renderItem={renderWorkoutListItem}
-              keyExtractor={(item) => item.id}
+              keyExtractor={(item) => item._id}
               style={styles.workoutList}
             />
           </View>
@@ -275,6 +262,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.light.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: Colors.light.text,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  retryButton: {
+    backgroundColor: Colors.light.tint,
+    padding: 10,
+    borderRadius: 5,
+  },
+  retryButtonText: {
+    color: Colors.light.text,
+    fontWeight: 'bold',
   },
   daySelectorContainer: {
     flexDirection: 'row',
@@ -401,7 +413,7 @@ const styles = StyleSheet.create({
   updateButton: {
     backgroundColor: Colors.light.tint,
   },
-  updateButtonText:  {
+  updateButtonText: {
     color: 'white',
     fontSize: 16,
   },
@@ -426,3 +438,5 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 });
+
+export default Workouts;
