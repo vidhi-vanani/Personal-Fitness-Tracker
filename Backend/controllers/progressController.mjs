@@ -2,7 +2,7 @@ import Progress from '../models/progress.mjs';
 
 export const getAllDataPoints = async (req, res) => {
   try {
-    const progress = await Progress.find().sort({ date: -1 });
+    const progress = await Progress.find().sort({ date: 1 });
     res.json(progress);
   } catch (error) {
     console.error('Error getting progress:', error);

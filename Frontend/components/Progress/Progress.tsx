@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { 
   View, 
   Text, 
@@ -15,8 +15,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LineChart, XAxis, YAxis, Line, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import axios from 'axios';
 import { BASE_URL } from '@/constants/api';
+import { useFocusEffect } from 'expo-router';
 
-interface ProgressData {
+export type ProgressData = {
   _id?: string;
   date: string;
   weight: number;
@@ -35,6 +36,13 @@ export const Progress = () => {
   useEffect(() => {
     fetchProgressData();
   }, []);
+
+    useFocusEffect(
+      useCallback(() => {
+        fetchProgressData();
+        return () => {};
+      }, [])
+    );
 
   const fetchProgressData = async () => {
     try {
@@ -57,7 +65,7 @@ export const Progress = () => {
 
     try {
       await axios.post(`${BASE_URL}/api/progress`, newProgress);
-      setProgressData([newProgress, ...progressData]);
+      fetchProgressData();
       setIsAddModalVisible(false);
       setWeight('');
       setMass('');
@@ -334,3 +342,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
+export default Progress;
