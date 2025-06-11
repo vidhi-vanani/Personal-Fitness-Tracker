@@ -104,7 +104,7 @@
 
 ---
 
-#### **Meeting 8 - June 11, 2025**
+#### **Meeting 8 - June 9, 2025**
 **Agenda:**
 - Final internal review of the full app.
 - Reviewed deployment and GitHub submission.
@@ -117,4 +117,14 @@
 - Andrew: Conduct final feature walkthrough.
 
 ---
+
+#### **Meeting 9 - June 10, 2025**
+**Agenda:**
+- Conducted post-submission retrospective.
+- Discussed lessons learned and future improvements.
+
+**Action Items:**
+- All: Submit final reflections.
+- Document what went well and what could be improved.
+- Wrap up team communications and archive resources.
 

@@ -85,4 +85,4 @@ The backend provides several API endpoints for managing fitness data:
 - `PUT /api/workouts/:id` - Update a workout
 - `GET /api/progress` - Get fitness progress data
 - `POST /api/progress` - Add a new progress entry
-- `DELETE /api/progress/:id` - Delete a progress entry
+- `DELET 12E /api/progress/:id` - Delete a progress entry
