@@ -5,7 +5,7 @@
 #### **Meetings Schedule**  
 - **Meetings Platform:** Microsoft Teams  
 - **Meetings Frequency:** Every Wednesday  
-- **Meetings Dates:** April 23, 2025 – June 11, 2025  
+- **Meetings Dates:** April 23, 2025 – June 10, 2025  
 
 #### **Meeting Summaries**  
 
@@ -58,8 +58,8 @@
 - Designed overall visual style guide.
 
 **Action Items:**
-- Vidhi: Implement reusable UI components.
-- Khushi: Complete workout categories and CRUD logic.
+- Vidhi: Complete workout categories and CRUD logic.
+- Khushi: Implement reusable UI components.
 - Andrew: Integrate chart library for progress visualization.
 
 ---
